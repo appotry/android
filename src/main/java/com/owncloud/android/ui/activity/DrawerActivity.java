@@ -33,21 +33,26 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.URLUtil;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.google.android.material.button.MaterialButton;
@@ -212,8 +217,7 @@ public abstract class DrawerActivity extends ToolbarActivity
 
             // Setting up drawer header
             mNavigationViewHeader = mNavigationView.getHeaderView(0);
-            FrameLayout drawerHeader = mNavigationViewHeader.findViewById(R.id.drawer_header_view);
-            setupDrawerHeader(drawerHeader);
+            updateHeader();
 
             setupDrawerMenu(mNavigationView);
             getAndDisplayUserQuota();
@@ -278,6 +282,44 @@ public abstract class DrawerActivity extends ToolbarActivity
         ThemeBarUtils.colorProgressBar(mQuotaProgressBar, ThemeColorUtils.primaryColor(this));
     }
 
+    public void updateHeader() {
+        if (getAccount() != null &&
+            getStorageManager().getCapability(getAccount().name).getServerBackground() != null) {
+
+            OCCapability capability = getStorageManager().getCapability(getAccount().name);
+            String logo = capability.getServerLogo();
+            int primaryColor = ThemeUtils.primaryColor(getAccount(), false, this);
+
+            // set background to primary color
+            FrameLayout drawerHeader = mNavigationViewHeader.findViewById(R.id.drawer_header_view);
+            drawerHeader.setBackgroundColor(ThemeUtils.primaryColor(getAccount(), true, this));
+
+            if (!TextUtils.isEmpty(logo) && URLUtil.isValidUrl(logo)) {
+                // background image
+                SimpleTarget target = new SimpleTarget<Drawable>() {
+                    @Override
+                    public void onResourceReady(Drawable resource, GlideAnimation glideAnimation) {
+                        Drawable[] drawables = {new ColorDrawable(primaryColor), resource};
+                        LayerDrawable layerDrawable = new LayerDrawable(drawables);
+                        setDrawerHeaderLogo(layerDrawable);
+                    }
+                };
+
+                Glide.with(this)
+                    .load(logo)
+                    .centerCrop()
+                    .crossFade()
+                    .into(target);
+            }
+        }
+    }
+
+    private void setDrawerHeaderLogo(Drawable drawable) {
+        ImageView imageHeader = mNavigationViewHeader.findViewById(R.id.drawer_header_logo);
+        imageHeader.setImageDrawable(drawable);
+        imageHeader.setScaleType(ImageView.ScaleType.FIT_START);
+    }
+    
     /**
      * setup drawer header, basically the logo color
      */
