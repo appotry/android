@@ -46,7 +46,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.URLUtil;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -291,8 +290,8 @@ public abstract class DrawerActivity extends ToolbarActivity
             int primaryColor = ThemeUtils.primaryColor(getAccount(), false, this);
 
             // set background to primary color
-            FrameLayout drawerHeader = mNavigationViewHeader.findViewById(R.id.drawer_header_view);
-            drawerHeader.setBackgroundColor(ThemeUtils.primaryColor(getAccount(), true, this));
+            LinearLayout drawerHeader = mNavigationViewHeader.findViewById(R.id.drawer_header_view);
+            drawerHeader.setBackgroundColor(ThemeUtils.unchangedPrimaryColor(getAccount(), this));
 
             if (!TextUtils.isEmpty(logo) && URLUtil.isValidUrl(logo)) {
                 // background image
@@ -301,7 +300,9 @@ public abstract class DrawerActivity extends ToolbarActivity
                     public void onResourceReady(Drawable resource, GlideAnimation glideAnimation) {
                         Drawable[] drawables = {new ColorDrawable(primaryColor), resource};
                         LayerDrawable layerDrawable = new LayerDrawable(drawables);
-                        setDrawerHeaderLogo(layerDrawable);
+
+                        String name = capability.getServerName();
+                        setDrawerHeaderLogo(layerDrawable, name);
                     }
                 };
 
@@ -314,10 +315,27 @@ public abstract class DrawerActivity extends ToolbarActivity
         }
     }
 
-    private void setDrawerHeaderLogo(Drawable drawable) {
+    private void setDrawerHeaderLogo(Drawable drawable, String name) {
         ImageView imageHeader = mNavigationViewHeader.findViewById(R.id.drawer_header_logo);
         imageHeader.setImageDrawable(drawable);
         imageHeader.setScaleType(ImageView.ScaleType.FIT_START);
+        imageHeader.setAdjustViewBounds(true);
+
+        imageHeader.setMaxWidth(DisplayUtils.convertDpToPixel(100f, this));
+
+        LinearLayout.MarginLayoutParams params = new LinearLayout.MarginLayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                                                               LinearLayout.LayoutParams.MATCH_PARENT);
+        params.leftMargin = 20;
+        params.rightMargin = 20;
+
+        imageHeader.setLayoutParams(new LinearLayout.LayoutParams(params));
+
+        if (!TextUtils.isEmpty(name)) {
+            TextView serverName = mNavigationViewHeader.findViewById(R.id.drawer_header_server_name);
+            serverName.setText(name);
+            serverName.setTextColor(ThemeUtils.unchangedFontColor(this));
+        }
+
     }
     
     /**
