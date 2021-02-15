@@ -45,6 +45,8 @@ import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.view.ViewGroup.MarginLayoutParams;
 import android.webkit.URLUtil;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -323,10 +325,11 @@ public abstract class DrawerActivity extends ToolbarActivity
 
         imageHeader.setMaxWidth(DisplayUtils.convertDpToPixel(100f, this));
 
-        LinearLayout.MarginLayoutParams params = new LinearLayout.MarginLayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                                                                               LinearLayout.LayoutParams.MATCH_PARENT);
-        params.leftMargin = 20;
-        params.rightMargin = 20;
+        MarginLayoutParams oldParam = (MarginLayoutParams) imageHeader.getLayoutParams();
+        MarginLayoutParams params = new MarginLayoutParams(LayoutParams.WRAP_CONTENT,
+                                                           LayoutParams.MATCH_PARENT);
+        params.leftMargin = oldParam.leftMargin;
+        params.rightMargin = oldParam.rightMargin;
 
         imageHeader.setLayoutParams(new LinearLayout.LayoutParams(params));
 
