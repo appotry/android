@@ -33,6 +33,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
@@ -53,9 +55,14 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.bumptech.glide.GenericRequestBuilder;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.model.StreamEncoder;
+import com.bumptech.glide.load.resource.file.FileToStreamDecoder;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.caverock.androidsvg.SVG;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.navigation.NavigationView;
 import com.nextcloud.client.account.User;
@@ -306,6 +313,11 @@ public abstract class DrawerActivity extends ToolbarActivity
                         String name = capability.getServerName();
                         setDrawerHeaderLogo(layerDrawable, name);
                     }
+
+                    @Override
+                    public void onLoadFailed(Exception e, Drawable errorDrawable) {
+                        loadSVG(logo, primaryColor, capability.getServerName());
+                    }
                 };
 
                 Glide.with(this)
@@ -315,6 +327,33 @@ public abstract class DrawerActivity extends ToolbarActivity
                     .into(target);
             }
         }
+    }
+
+    private void loadSVG(String logo, int primaryColor, String serverName) {
+        GenericRequestBuilder<Uri, InputStream, SVG, Bitmap> requestBuilder = Glide.with(this)
+            .using(Glide.buildStreamModelLoader(Uri.class, this), InputStream.class)
+            .from(Uri.class)
+            .as(SVG.class)
+            .transcode(new SvgBitmapTranscoder(128, 128), Bitmap.class)
+            .sourceEncoder(new StreamEncoder())
+            .cacheDecoder(new FileToStreamDecoder<>(new SvgDecoder()))
+            .decoder(new SvgDecoder());
+
+        // background image
+        SimpleTarget target = new SimpleTarget<Bitmap>() {
+            @Override
+            public void onResourceReady(Bitmap resource, GlideAnimation glideAnimation) {
+                Drawable[] drawables = {new ColorDrawable(primaryColor), new BitmapDrawable(resource)};
+                LayerDrawable layerDrawable = new LayerDrawable(drawables);
+
+                setDrawerHeaderLogo(layerDrawable, serverName);
+            }
+        };
+
+        requestBuilder
+            .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+            .load(Uri.parse(logo))
+            .into(target);
     }
 
     private void setDrawerHeaderLogo(Drawable drawable, String name) {
