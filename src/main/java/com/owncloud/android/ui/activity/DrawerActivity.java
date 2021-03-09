@@ -50,6 +50,7 @@ import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.webkit.URLUtil;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -106,6 +107,8 @@ import com.owncloud.android.utils.DisplayUtils;
 import com.owncloud.android.utils.DrawerMenuUtil;
 import com.owncloud.android.utils.FilesSyncHelper;
 import com.owncloud.android.utils.svg.MenuSimpleTarget;
+import com.owncloud.android.utils.svg.SvgBitmapTranscoder;
+import com.owncloud.android.utils.svg.SvgDecoder;
 import com.owncloud.android.utils.theme.ThemeBarUtils;
 import com.owncloud.android.utils.theme.ThemeColorUtils;
 import com.owncloud.android.utils.theme.ThemeDrawableUtils;
@@ -117,6 +120,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.parceler.Parcels;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -296,15 +300,20 @@ public abstract class DrawerActivity extends ToolbarActivity
 
             OCCapability capability = getStorageManager().getCapability(getAccount().name);
             String logo = capability.getServerLogo();
-            int primaryColor = ThemeUtils.primaryColor(getAccount(), false, this);
+            int primaryColor = ThemeColorUtils.primaryColor(getAccount(), false, this);
 
             // set background to primary color
             LinearLayout drawerHeader = mNavigationViewHeader.findViewById(R.id.drawer_header_view);
-            drawerHeader.setBackgroundColor(ThemeUtils.unchangedPrimaryColor(getAccount(), this));
+            drawerHeader.setBackgroundColor(ThemeColorUtils.unchangedPrimaryColor(getAccount(), this));
 
             if (!TextUtils.isEmpty(logo) && URLUtil.isValidUrl(logo)) {
                 // background image
                 SimpleTarget target = new SimpleTarget<Drawable>() {
+                    @Override
+                    public void onLoadStarted(Drawable placeholder) {
+                        super.onLoadStarted(placeholder);
+                    }
+
                     @Override
                     public void onResourceReady(Drawable resource, GlideAnimation glideAnimation) {
                         Drawable[] drawables = {new ColorDrawable(primaryColor), resource};
@@ -375,7 +384,7 @@ public abstract class DrawerActivity extends ToolbarActivity
         if (!TextUtils.isEmpty(name)) {
             TextView serverName = mNavigationViewHeader.findViewById(R.id.drawer_header_server_name);
             serverName.setText(name);
-            serverName.setTextColor(ThemeUtils.unchangedFontColor(this));
+            serverName.setTextColor(ThemeColorUtils.unchangedFontColor(this));
         }
 
     }
