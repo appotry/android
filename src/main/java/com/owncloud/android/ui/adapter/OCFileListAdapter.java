@@ -94,9 +94,7 @@ import java.util.Vector;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
-import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -138,9 +136,6 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     private boolean showShareAvatar = false;
     private OCFile highlightedItem;
 
-    Drawable borderDrawable;
-    int padding;
-
     public OCFileListAdapter(
         Activity activity,
         User user,
@@ -167,10 +162,6 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         } else {
             userId = "";
         }
-
-        borderDrawable = ContextCompat.getDrawable(activity, R.drawable.round_bgnd);
-        DrawableCompat.setTint(borderDrawable, ContextCompat.getColor(activity, R.color.bg_default));
-        padding = DisplayUtils.convertDpToPixel(2, activity);
 
         // initialise thumbnails cache on background thread
         new ThumbnailsCacheManager.InitDiskCacheTask().execute();
